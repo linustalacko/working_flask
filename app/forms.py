@@ -1,7 +1,6 @@
-from ast import Pass
 from flask import Flask
 from flask_wtf import FlaskForm, RecaptchaField
-from wtforms import BooleanField, StringField, EmailField, PasswordField, SubmitField
+from wtforms import TextAreaField, BooleanField, StringField, EmailField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length, Email
 
 class LoginForm(FlaskForm):
@@ -23,3 +22,15 @@ class RegistrationForm(FlaskForm):
     ])
     submit = SubmitField('Sign Up')
     recaptcha = RecaptchaField()
+
+class EmailTemplate(FlaskForm):
+    recipients = StringField('Recipients', validators=[
+        DataRequired(), Email()
+    ])
+    subject = StringField('Subject', validators=[
+        DataRequired(), Length(min=1, max=20)
+    ])
+    message = TextAreaField('Message', validators=[
+        DataRequired()
+    ])
+    submit = SubmitField('Send Emails')

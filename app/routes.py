@@ -1,11 +1,12 @@
 from crypt import methods
+from email.message import Message
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import current_user
-import flask_login
-from app import app, db, bcrypt
-from app.forms import RegistrationForm, LoginForm
+from app import app, db, bcrypt, mail
+from app.forms import RegistrationForm, LoginForm, EmailTemplate
 from app.models import User
 from flask_login import login_user, current_user, logout_user, login_required
+
 
 #Making a simple log in app, that returns your data
 @app.route('/', methods=["POST", "GET"])
@@ -27,13 +28,13 @@ def landing_page():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('hello_user'))
+        return redirect(url_for('dashboard'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            return redirect(url_for('hello_user'))
+            return redirect(url_for('dashboard'))
         else:
             flash("Login failed, username or password wrong lol")
     return render_template("login.html", form=form)
@@ -41,7 +42,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('hello_user'))
+        return redirect(url_for('dashboard'))
     form = RegistrationForm()
     if request.method == 'POST':
         hashed_password = bcrypt.generate_password_hash(form.password.data)
@@ -52,10 +53,16 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
-@app.route('/hello_user', methods=["GET", "POST"])
-def hello_user():
-    name = str(current_user.username)
-    return render_template('hello_user.html', name=name)
+@app.route('/dashboard', methods=['POST', 'GET'])
+def dashboard():
+    form = EmailTemplate()
+    if request.method == "POST":
+        email_list = form.recipients.data.split(', ')
+        msg = Message(form.subject.data, sender=current_user.email, recipients=email_list)
+        msg.body = form.message.data
+        mail.send(msg)
+    return render_template("dashboard.html", form=form)
+
 
 @app.route('/delete', methods=["GET", "POST"])
 def delete():
