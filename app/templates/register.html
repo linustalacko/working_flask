@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Register</h1>
+    <form action="" method="POST">
+        {{form.hidden_tag()}}
+        <legend>Register Now!</legend>
+        <div id="username">
+            {{form.username.label}}
+            {{form.username}}
+            {% if form.username.errors %}
+                {% for error in form.username.errors %} 
+                    {{error}}
+                {% endfor %}  
+            {% endif %}  
+        </div>
+        <div id="email">
+            {{form.email.label}}
+            {{form.email}}
+            {% if form.email.errors %} 
+                {% for error in form.email.errors %} 
+                    {{error}}
+                {% endfor %} 
+            {% endif %} 
+        </div>
+        <div id="password">
+            {{form.password.label}}
+            {{form.password}}
+            {% if form.password.errors %} 
+                {% for error in form.password.errors %} 
+                    {{error}}
+                {% endfor %} 
+            {% endif %} 
+        </div>
+        <div id="confirm">
+            {{form.confirm_password.label}}
+            {{form.confirm_password}} 
+            {% if form.confirm_password.errors %} 
+                {% for error in form.confirm_password.errors %} 
+                    {{error}}
+                {% endfor %} 
+            {% endif %} 
+        </div>
+        <div>
+            {{form.submit}}
+        </div>
+        {% for message in get_flashed_messages() %} 
+            <h2>{{ message }}</h2>
+        {% endfor %} 
+    </form> 
+</body>
+</html>
