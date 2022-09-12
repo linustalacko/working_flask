@@ -4,7 +4,7 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import current_user
 from app import app, db, bcrypt
 from app.forms import RegistrationForm, LoginForm, EmailTemplate
-from app.models import User
+from app.models import User, EmailSent
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Mail
 
@@ -74,14 +74,18 @@ def register():
 @app.route('/dashboard', methods=['POST', 'GET'])
 def dashboard():
     form = EmailTemplate()
+    database_for_email = EmailSent()
     if form.validate_on_submit():
         email_list = form.recipients.data.split(', ')
         msg = Message(form.subject.data,
                   sender="youjustgotzinged@gmail.com",
                   recipients=email_list)
         msg.body = form.message.data
+        email_data = EmailSent(recipients=email_list, subject=form.subject.data, message=form.message.data)
+        db.sessiom.add(email_data)
+        db.session.commit()
         mail.send(msg)
-    return render_template("dashboard.html", form=form, user=current_user)
+    return render_template("dashboard.html", form=form, user=current_user, emails_sent=database_for_email)
 
 
 @app.route('/delete', methods=["GET", "POST"])

@@ -15,4 +15,9 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"{self.username}, {self.email}, {self.password}, {self.id}"
 
-
+class EmailSent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    recipients = db.Column(db.Text, nullable=False)
+    subject = db.Column(db.Text, nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
