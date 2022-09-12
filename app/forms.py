@@ -1,7 +1,9 @@
+from wsgiref.validate import validator
+from app.models import User
 from flask import Flask
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import TextAreaField, BooleanField, StringField, EmailField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, Length, Email
+from wtforms.validators import ValidationError, DataRequired, EqualTo, Length, Email
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -22,6 +24,9 @@ class RegistrationForm(FlaskForm):
     ])
     submit = SubmitField('Sign Up')
     recaptcha = RecaptchaField()
+
+
+
 
 class EmailTemplate(FlaskForm):
     recipients = StringField('Recipients', validators=[
