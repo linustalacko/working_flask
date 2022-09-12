@@ -58,7 +58,11 @@ def dashboard():
     form = EmailTemplate()
     if request.method == "POST":
         email_list = form.recipients.data.split(', ')
-        msg = Message(form.subject.data, sender=current_user.email, recipients=email_list)
+        msg = Message(
+                form.subject.data, 
+                sender ='youjustgotzinged@gmail.com', 
+                recipients = email_list
+            )
         msg.body = form.message.data
         mail.send(msg)
     return render_template("dashboard.html", form=form)
