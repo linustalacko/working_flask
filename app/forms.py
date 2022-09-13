@@ -25,12 +25,9 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Sign Up')
     recaptcha = RecaptchaField()
 
-
-
-
 class EmailTemplate(FlaskForm):
     recipients = StringField('Recipients', validators=[
-        DataRequired(), Email()
+        DataRequired()
     ])
     subject = StringField('Subject', validators=[
         DataRequired(), Length(min=1, max=20)

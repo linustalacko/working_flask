@@ -1,4 +1,5 @@
 from crypt import methods
+import email
 from email.message import Message
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import current_user
@@ -6,9 +7,7 @@ from app import app, db, bcrypt
 from app.forms import RegistrationForm, LoginForm, EmailTemplate
 from app.models import User, EmailSent
 from flask_login import login_user, current_user, logout_user, login_required
-from flask_mail import Mail
-
-mail = Mail(app)
+from flask_mail import Mail, Message
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
@@ -16,6 +15,8 @@ app.config['MAIL_USERNAME'] = 'youjustgotzinged@gmail.com'
 app.config['MAIL_PASSWORD'] = 'wnedoxtnbfaabgcf'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+
+mail = Mail(app)
 
 #Making a simple log in app, that returns your data
 @app.route('/', methods=["POST", "GET"])
@@ -37,13 +38,13 @@ def landing_page():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard', currentuser=current_user.username))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('dashboard', currentuser=current_user.username))
         else:
             flash("Login failed, username or password wrong lol")
     return render_template("login.html", form=form)
@@ -51,7 +52,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard', currentuser=current_user.username))
     form = RegistrationForm()
     if request.method == 'POST':
         username = User.query.filter_by(username=form.username.data).first()
@@ -71,8 +72,13 @@ def register():
             return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
-@app.route('/dashboard', methods=['POST', 'GET'])
-def dashboard():
+@app.route('/dashboard/<currentuser>')
+def dashboard(currentuser):
+    database = EmailSent.query.filter_by(user_id=current_user.id)
+    return render_template("dashboard.html", username=current_user.username, database=database)
+
+@app.route('/newpost', methods=['POST', 'GET'])
+def newpost():
     form = EmailTemplate()
     database_for_email = EmailSent()
     if form.validate_on_submit():
@@ -81,11 +87,13 @@ def dashboard():
                   sender="youjustgotzinged@gmail.com",
                   recipients=email_list)
         msg.body = form.message.data
-        email_data = EmailSent(recipients=email_list, subject=form.subject.data, message=form.message.data)
-        db.sessiom.add(email_data)
+        email_list = ",".join(email_list)
+        print(email_list)
+        email_data = EmailSent(recipients=email_list, subject=form.subject.data, message=form.message.data, user_id=current_user.id)
+        db.session.add(email_data)
         db.session.commit()
-        mail.send(msg)
-    return render_template("dashboard.html", form=form, user=current_user, emails_sent=database_for_email)
+        return redirect(url_for('dashboard', currentuser=current_user.username))
+    return render_template("new_post.html", form=form, user=current_user, emails_sent=database_for_email)
 
 
 @app.route('/delete', methods=["GET", "POST"])
@@ -95,6 +103,7 @@ def delete():
         for user in database.query.all():
             if request.form['delete'] == "Delete " + user.username:
                 User.query.filter_by(username=user.username).delete()
+                EmailSent.query.filter_by(user_id=user.id).delete()
                 db.session.commit()
     return render_template('delete.html', database=database)
 

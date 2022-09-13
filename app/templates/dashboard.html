@@ -4,36 +4,27 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Document</title>
+    <style>
+        * {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <h1>Dashboard</h1>
-    <h2>Hello {{user.username}} </h2>
-    <form action="" method="POST">
-        {{ form.hidden_tag() }}
-        <div>
-            {{ form.recipients.label }}
-            {{ form.recipients }}
-        </div>
-        <div>
-            {{ form.subject.label }}
-            {{ form.subject }}
-        </div>
-        <div>
-            {{ form.message.label }}
-            {{ form.message }}
-        </div>
-        <div>
-            {{form.submit}}
-        </div>
-        <div>
-            {{email}}
-        </div>
-    </form>
-    {% for error in form.errors.items() %} 
-        {{error}}
-    {% endfor %}
-    <br>
-    <a href="/">Link To Home Page</a>
+    <h2>Hey {{username}}! <br>View your recent posts below!</h2>
+    <table>
+        <th>Number of recipients</th>
+        <th>Email Subject</th>
+            {% for post in database %}
+                <tr>
+                    <td>{{post.recipients}}</td>
+                    <td>{{post.subject}}</td>
+                    <td>{{post.user_id}}</td>
+                </tr>
+            {% endfor %}
+    </table>
+    <a href="/newpost">Send a new email</a>
 </body>
 </html>
